@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="None" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>rn-ace-unit</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Home";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> rn-ace-unit
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#project-layout">Project Layout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#daily-jobs">Daily Jobs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ace_unit">ace_unit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#datalake">datalake</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#monthly-jobs">Monthly Jobs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#built-with">Built With</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#docker-setup">Docker Setup</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#versioning">Versioning</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">rn-ace-unit</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+      <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p><img alt="relay" src="/assets/relay_network.png" /></p>
+<h1 id="rn-ace-unit-documenation-page">rn-ace-unit Documenation Page</h1>
+<p>This repository is for calculating active customer engagement data for billing purposes</p>
+<p>To view the RFC, please visit <a href="https://rn-jira.atlassian.net/wiki/spaces/RT/pages/2253225992/RFC-0072+-+ACE+Unit+Calculation">confluence</a>.</p>
+<h3 id="project-layout">Project Layout</h3>
+<pre><code>deploy/             # Contains python file used to deploy files to s3 during Codebuild.
+infrastructure/     # TF files which build and deploy AWS resources during CICD
+pipeline/           # Used by the rn-release-tool to build Codepipeline used to run CICD
+rn/                 # Parent folder
+    ace_unit/       # python code used by Glue for ace unit processes
+    common/         # shared python modules used by multiple jobs
+    datalake/       # python code used by Glue for datalake processes
+tests/              # Files used to run unit tests
+</code></pre>
+<h3 id="daily-jobs">Daily Jobs</h3>
+<h4 id="ace_unit">ace_unit</h4>
+<ul>
+<li>Daily job is kicked off at 4:15AM EST.  Both <code>notification_attempted_daily</code> and <code>notification_delivered_daily</code> and run in parallel.</li>
+<li><code>notification_attempted_daily</code> glue job runs to build <code>notification_attempted</code> Athena table.  <code>notification_attempted_crawler</code> runs to make new data accessible in Athena.</li>
+<li><code>notification_delivered_daily</code> glue job runs to build <code>notification_delivered</code> Athena table.  <code>notification_delivered_crawler</code> runs to make new data accessible in Athena.</li>
+<li>After both of the previous jobs have completed successfully, <code>ace_unit_calc_daily</code> glue job runs to build <code>ace_unit_audit_table</code> and <code>ace_unit_agg_table</code> Athena tables.</li>
+<li><code>ace_unit_audit_crawler</code> and <code>ace_unit_agg_crawler</code> run to make new data accessible in Athena.</li>
+<li>estimated run time in production: 12 minutes</li>
+</ul>
+<pre><code class="language-mermaid">graph TD;
+    notification_attempted_daily-- noti_att_crawler --&gt;ace_unit_calc_daily;
+    notification_delivered_daily-- not_deliv_crawler --&gt;ace_unit_calc_daily;
+    ace_unit_calc_daily-- ace_unit_audit_crawler --&gt;ace_unit_audit_table;
+    ace_unit_calc_daily-- ace_unit_agg_crawler --&gt;ace_unit_agg_table;
+</code></pre>
+<h4 id="datalake">datalake</h4>
+<ul>
+<li><code>outcome_experience_lookup_daily</code> glue job is kicked off at 4:15AM EST. This runs to build <code>outcome_experience_lookup</code> Athena table which is then deduplicated via the <code>v_dim_customer</code> Athena view.  <code>outcome_experience_lookup_crawler</code> runs to make new data accessible in Athena. </li>
+<li><code>dim_customer_daily_glue</code> glue job is kicked off at 4:15AM EST and replicates the <code>dim_customer</code> table from the datawarehouse in the datalake.  This involves connecting to Redshift and running an unload statement.  This builds <code>dim_customer</code> Athena which is then deduplicated via the <code>v_dim_customer</code> Athena view.</li>
+</ul>
+<h3 id="monthly-jobs">Monthly Jobs</h3>
+<ul>
+<li><code>ace_unit_monthly_output</code>: python shell job that runs in Glue.  Job runs at 5AM EST on the first of the month.<ul>
+<li>Job grabs relevant data from <code>ace_unit_agg_table</code> in Athena and pushes the data to <code>com.relaynetwork</code> s3 bucket for Joe Doran to access.</li>
+<li>estimated run time in production: 30 seconds</li>
+</ul>
+</li>
+<li><code>ace_unit_monthly_outcome_experience_output</code>: python shell job that runs in Glue.  Job runs at 5AM EST on the first of the month.<ul>
+<li>Job grabs relevant data from <code>ace_unit_audit_table</code> and joins it with <code>outcome_experience_lookup</code> in Athena and pushes the data to <code>com.relaynetwork</code> s3 bucket for Finance to access.  This is a different view of the data than <code>ace_unit_monthly_output</code>.  The data is grouped at a different level and contains additional columns.</li>
+<li>estimated run time in production: 30 seconds</li>
+</ul>
+</li>
+</ul>
+<h2 id="built-with">Built With</h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/glue/latest/dg/what-is-glue.html">AWS Glue</a> - Fully managed ETL framework hosted in AWS<ul>
+<li>https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-libraries.html</li>
+<li>Release notes including versions: https://docs.aws.amazon.com/glue/latest/dg/release-notes.html</li>
+<li>https://docs.aws.amazon.com/glue/latest/dg/migrating-version-30.html#migrating-version-30-appendix-dependencies</li>
+</ul>
+</li>
+<li><a href="https://spark.apache.org/">PySpark</a> - PySpark is an interface for Apache Spark in Python.</li>
+<li><a href="https://aws.amazon.com/codepipeline/">AWS CodePipeline</a> - Fully managed continuous delivery service</li>
+<li><a href="https://www.terraform.io/">Terraform</a> - Open-source infrastructure as code software tool</li>
+<li><em>Add any additional libraries, services, or frameworks used</em></li>
+</ul>
+<h2 id="docker-setup">Docker Setup</h2>
+<ul>
+<li>Pull the amazon glue Docker image down to your local machine (docker desktop must be installed):
+<code>docker pull amazon/aws-glue-libs:glue_libs_3.0.0_image_01</code></li>
+<li>Run your docker image in interactive mode and mount this github repo to it (change folders below as needed to match your local folder setup):
+<code>docker run -it -v /Users/jrose/Documents/Github/rn-ace-unit:/home/glue_user/workspace -v ~/.aws:/home/glue_user/.aws -p 8888:8888 -e DISABLE_SSL=true --rm --name ace_unit_glue amazon/aws-glue-libs:glue_libs_3.0.0_image_01</code></li>
+<li>If you want to open a Juptyer Notebook, run the following and then go to <code>localhost:8888</code>:
+<code>sh /home/glue_user/jupyter/jupyter_start.sh</code></li>
+</ul>
+<h2 id="versioning">Versioning</h2>
+<p>TODO</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme_extra.js" defer></script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.4.0
+Build Date UTC : 2022-10-05 14:16:23.327340+00:00
+-->
