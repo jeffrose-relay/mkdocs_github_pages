@@ -1,24 +1,23 @@
-# Create beautiful and localized documentations and websites using MkDocs + Github
-
 ## Setup
 
 ```bash
-$ python3 -m venv ep2021_venv
-$ source ep2021_venv/bin/activate
-(ep2021_venv) $ pip install -r requirements.txt
-...
+python3 -m venv mkdocs
+source mkdocs/bin/activate
+pip install -r requirements.txt
+
+# create mkdocs project
+mkdocs new .
 ```
 
-## Talk Abstract
+## Documentation Process
 
-In this talk I will walk you through all the steps needed to create and host feature rich and localized documentations (and even websites) using MkDocs + Github Pages.
+For all new development, we add a ticket to the board for documentation (1-2 pts)
+For all existing code which needs documentation, we start making a list on Confluence and add 1 ticket to the board per sprint (1-2 pts).
 
-MkDocs is a famous Python powered project used to build documentation for a lot of projects. It's based on Markdown and supports Markdown extensions, custom themes and plugins to extend its rendering capabilities.
+### Types of Documentation
+Process -> Confluence Page
+Code -> Readme (what it does and how to run it)
 
-But it did not support building documentations in multiple languages and this was a wanted feature since 2014...
+### Future State
+Start using MkDocs 
 
-After building documentations using MkDocs I decided to use it to switch my website and blog from Wordpress to a static page generator. I thus took on the challenge to contribute localization support to the MkDocs project because I needed it and it could benefit the community.
-
-After 2 months of work, 175 comments and 85 commits over 55 files I'm glad that my PR have been merged and is part of the MkDocs 1.2 version.
-
-I learned a lot along the way and I wanted to share my experience and a comprehensive walk through to get you ready and happy to use these new MkDocs features!
