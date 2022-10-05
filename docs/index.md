@@ -1,5 +1,5 @@
 
-![relay](/assets/relay_network.png)
+![relay](./assets/relay_network.png)
 # rn-ace-unit Documenation Page
 
 This repository is for calculating active customer engagement data for billing purposes
